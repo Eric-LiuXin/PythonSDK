@@ -112,3 +112,37 @@ def round_value(f, n=2, type="ROUND_HALF_UP"):
 
 
 ############## 数据处理 END ##############
+
+
+'''
+def query_result_detail_for_bigtable(req_cntxt, calc_id=None,):
+    """
+    按分类+版本查询结果
+    """
+    conn_str = req_cntxt.get("db_conn_str", "")
+    db_schema = req_cntxt.get("db_schema", "")
+    if not conn_str:
+        return False, _("找不到结果数据库连接信息。")
+    if not db_schema:
+        return False, _("找不到结果数据库schema信息。")
+    # 连接到fact(result)数据库
+    conn = psycopg2.connect(conn_str)
+    msg = ""
+    my_data = []
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as curs:
+            curs.execute("select * from %s.result_query where calculation=%%s " % db_schema, [calc_id])
+
+            while True:
+                rcd = curs.fetchone()
+                if not rcd:
+                    break
+                my_data.append(rcd)
+    except Exception as _e:
+        msg = str(_e)
+        print("Query calc result failed: ", msg)
+    finally:
+        conn.close()
+    return my_data, msg
+
+'''
