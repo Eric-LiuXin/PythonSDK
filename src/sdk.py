@@ -115,34 +115,134 @@ def round_value(f, n=2, type="ROUND_HALF_UP"):
 
 
 '''
-def query_result_detail_for_bigtable(req_cntxt, calc_id=None,):
-    """
-    按分类+版本查询结果
-    """
-    conn_str = req_cntxt.get("db_conn_str", "")
-    db_schema = req_cntxt.get("db_schema", "")
-    if not conn_str:
-        return False, _("找不到结果数据库连接信息。")
-    if not db_schema:
-        return False, _("找不到结果数据库schema信息。")
-    # 连接到fact(result)数据库
-    conn = psycopg2.connect(conn_str)
-    msg = ""
-    my_data = []
-    try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as curs:
-            curs.execute("select * from %s.result_query where calculation=%%s " % db_schema, [calc_id])
+## 工具与配置
 
-            while True:
-                rcd = curs.fetchone()
-                if not rcd:
-                    break
-                my_data.append(rcd)
-    except Exception as _e:
-        msg = str(_e)
-        print("Query calc result failed: ", msg)
-    finally:
-        conn.close()
-    return my_data, msg
+### flake8
+
+[`flake8`](https://flake8.pycqa.org/) 是一个结合了 pycodestyle，pyflakes，mccabe 检查 Python 代码规范的工具。
+
+
+使用方法：
+
+```bash
+flake8 {source_file_or_directory}
+```
+
+在项目中创建 `setup.cfg` 或者 `tox.ini` 或者 `.flake8` 文件，添加 `[flake8]` 部分。
+
+推荐的配置文件如下：
+
+```ini
+[flake8]
+ignore =
+    ;W503 line break before binary operator
+    W503,
+    ;E203 whitespace before ':'
+    E203,
+
+; exclude file
+exclude =
+    .tox,
+    .git,
+    __pycache__,
+    build,
+    dist,
+    *.pyc,
+    *.egg-info,
+    .cache,
+    .eggs
+
+max-line-length = 120
+```
+
+如果需要屏蔽告警可以增加行内注释 `# noqa`，例如：
+
+```python
+example = lambda: 'example'  # noqa: E731
+```
+
+### pylint
+
+[`pylint`](https://www.pylint.org/) 是一个能够检查编码质量、编码规范的工具。
+
+配置项较多，单独一个配置文件配置，详情可查阅：[.pylintrc](https://git.code.oa.com/standards/python/blob/master/.pylintrc)
+
+使用方法：
+
+```bash
+pylint {source_file_or_directory}
+```
+
+如果遇到一些实际情况与代码冲突的，可以在行内禁用相关检查，例如 ：
+
+```python
+try:
+    do_something()
+except Exception as ex:  # pylint: disable=broad-except
+    pass
+```
+
+如果需要对多行的进行禁用规则，可以配套使用 `# pylint: disable=具体错误码`/`# pylint: enable=具体错误码`。
+
+```python
+# pylint: disable=invalid-name
+这里的代码块会被忽略相关的告警
+app = Flask(__name__)
+# pylint: enable=invalid-name
+```
+
+
+### black
+
+[`black`](https://github.com/psf/black) 是一个官方的 Python 代码格式化工具。
+
+使用方法：
+
+```bash
+black {source_file_or_directory}
+```
+
+如果不想格式化部分代码，可以配套使用 `# fmt: off`/`# fmt: on` 临时关闭格式化。
+
+```python
+# fmt: off
+在这的代码不会被格式化
+# fmt: on
+```
+
+### EditorConfig
+
+EditorConfig 可以帮助开发同一项目下的跨多 IDE 的开发人员保持一致编码风格。
+
+在项目的根目录下放置
+[`.editorconfig`](https://git.code.oa.com/standards/python/blob/master/.editorconfig)
+文件，可以让编辑器规范文件对格式。参考配置如下：
+
+```ini
+# https://editorconfig.org
+
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+charset = utf-8
+end_of_line = lf
+
+[*.py]
+max_line_length = 120
+
+[*.bat]
+indent_style = tab
+end_of_line = crlf
+
+[LICENSE]
+insert_final_newline = false
+
+[Makefile]
+indent_style = tab
+```
 
 '''
